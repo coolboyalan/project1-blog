@@ -20,7 +20,7 @@ const createBlog = async (req, res) => {
       });
     }
     let result = await blogModel.create(data);
-    res.status(201).send({ status: true, data: result });
+    res.status(201).send({ status: true, data: result.authorId });
   } catch (err) {
     console.log(err.message);
     res.status(500).send({ status: false, msg: err.message });

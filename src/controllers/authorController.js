@@ -17,6 +17,11 @@ const createAuthor = async (req, res) => {
         .status(400)
         .send({ status: false, msg: "Please enter a password" });
 
+    if (!data.email)
+      return res
+        .status(400)
+        .send({ status: false, msg: "Please enter a valid email" });
+
     if (await authorModel.findOne({ email: data.email }))
       return res
         .status(400)
