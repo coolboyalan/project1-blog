@@ -21,7 +21,53 @@ const createBlog = async (req, res) => {
         });
     }
     let result = await blogModel.create(data);
-    res.status(201).send(result);
+    res.status(201).send({ status: true, data: result });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send({ status: false, msg: err.message });
+  }
+};
+
+const getBlogs = async (req, res) => {
+  try {
+    let query = Object.keys(req.query);
+    if (query.length) {
+      let filter = req.query;
+      filter.isDeleted = false;
+      filter.isPublished = true;
+      let data = await blogModel.find(filter);
+      if (!data.length) {
+        return res.status(404).send({ status: false, msg: "No blogs found" });
+      }
+      return res.status(200).send({ status: true, data: data });
+    }
+    let data = await blogModel.find({ isDeleted: false, isPublished: true });
+
+    if (!data.length)
+      return res.status(404).send({ status: false, msg: "No blogs found" });
+
+    res.status(200).send({ status: true, data: { data } });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send({ status: false, msg: err.message });
+  }
+};
+
+const deleteBlogByQuery = async (req, res) => {
+  try {
+    let query = Object.keys(req.query);
+    if (!query.length)
+      return res
+        .status(400)
+        .send({ status: false, msg: "Please provide valid query params" });
+    let filter = req.query;
+    filter.isDeleted = false
+    let result = await blogModel.updateMany(filter, {
+      $set: { isDeleted: true },
+    });
+    if (!result.modifiedCount)
+      return res.status(404).send({ status: false, msg: "No such blogs or already deleted" });
+    res.status(200).send({ status: true, data: result });
   } catch (err) {
     console.log(err.message);
     res.status(500).send({ status: false, msg: err.message });
@@ -57,4 +103,6 @@ const deleteBlog = async function (req, res) {
 module.exports = {
   create: createBlog,
   delete: deleteBlog,
+  deleteBlogByQuery:deleteBlogByQuery,
+  getBlogs:getBlogs
 };

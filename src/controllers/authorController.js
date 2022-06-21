@@ -5,16 +5,22 @@ const createAuthor = async (req, res) => {
     let data = req.body;
 
     if (!(data.firstName && data.lastName))
-      return res.status(400).send({ Error: "Please check the name fields" });
+      return res
+        .status(400)
+        .send({ status: false, msg: "Please check the name fields" });
 
     if (!data.title)
-      return res.status(400).send({ Error: "Title is mandatory" });
+      return res.status(400).send({ status: false, msg: "Title is mandatory" });
 
     if (!data.password)
-      return res.status(400).send({ Error: "Please enter a password" });
+      return res
+        .status(400)
+        .send({ status: false, msg: "Please enter a password" });
 
     if (await authorModel.findOne({ email: data.email }))
-      return res.status(400).send({ Error: "Email already exists" });
+      return res
+        .status(400)
+        .send({ status: false, msg: "Email already exists" });
 
     let result = await authorModel.create(data);
     res.status(201).send(result);
