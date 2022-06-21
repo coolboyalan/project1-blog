@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Object_id = mongoose.Schema.Types.ObjectId
+const Object_id = mongoose.Schema.Types.ObjectId;
 
 const blogSchema = new mongoose.Schema(
   {
@@ -32,7 +32,8 @@ const blogSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-  },{strict:false},
+  },
+  { strict: false },
   { timestamps: true }
 );
 

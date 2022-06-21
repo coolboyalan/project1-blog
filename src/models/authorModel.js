@@ -14,8 +14,9 @@ const authorSchema = new mongoose.Schema(
       type: String,
       required: [true, "Title is required"],
       enum: {
-        values:["Mr", "Mrs", "Miss"],
-        message: `Title could be only 'Mr, 'Mrs', or 'Miss'` },
+        values: ["Mr", "Mrs", "Miss"],
+        message: `Title could be only 'Mr, 'Mrs', or 'Miss'`,
+      },
     },
     email: {
       type: String,
