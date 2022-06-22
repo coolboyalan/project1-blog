@@ -66,7 +66,7 @@ const updateBlog = async function (req, res) {
     if(!await blogModel.findOne({ _id: id, isDeleted: false})) {
       return res
         .status(404)
-        .send({ status: false, msg: "No blog with such id or not published" });
+        .send({ status: false, msg: "No blog with such id" });
     }
     let data = await blogModel.findOneAndUpdate(
       { _id: id, isDeleted: false },

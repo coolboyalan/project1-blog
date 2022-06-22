@@ -1,4 +1,5 @@
 const authorModel = require("../models/authorModel");
+const validator = require("validator");
 
 const createAuthor = async (req, res) => {
   try {
@@ -17,7 +18,7 @@ const createAuthor = async (req, res) => {
         .status(400)
         .send({ status: false, msg: "Please enter a password" });
 
-    if (!data.email)
+    if (!(data.email && validator.isEmail(data.email)))
       return res
         .status(400)
         .send({ status: false, msg: "Please enter a valid email" });
