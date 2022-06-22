@@ -3,6 +3,9 @@ const authors = require("../controllers/authorController");
 const blogs = require("../controllers/blogController");
 const router = express.Router();
 
+//POST API TO LOGIN
+router.post("/login", authors.login)
+
 //POST APIS TO ADD BLOGS AND AUTHORS
 router.post("/authors", authors.create);
 router.post("/blogs", blogs.create);

@@ -1,5 +1,7 @@
 const authorModel = require("../models/authorModel");
 const validator = require("validator");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const createAuthor = async (req, res) => {
   try {
@@ -36,4 +38,41 @@ const createAuthor = async (req, res) => {
   }
 };
 
-module.exports.create = createAuthor;
+const login = async (req, res) => {
+  try {
+    let email = req.body.email;
+    let password = req.body.password;
+
+    if (!(email && password))
+      return res
+        .status(400)
+        .send({ status: false, msg: "email or password is missing" });
+
+    if (!validator.isEmail(email)) {
+      return res.status(400).send({ status: false, msg: "Invalid email" });
+    }
+    let author = await authorModel.findOne({
+      email: email,
+      password: password,
+    });
+
+    if (!author)
+      return res.status(401).send({
+        status: false,
+        msg: "email or password is not correct",
+      });
+
+    let id = author["_id"].toString();
+    let token = jwt.sign({ authorId: id }, process.env.JWT_SECRET);
+    res.setHeader("x-auth-token", token);
+    res.status(200).send({ status: true, data: token });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).send(err.message);
+  }
+};
+
+module.exports = {
+  create: createAuthor,
+  login: login,
+};
