@@ -32,6 +32,15 @@ const getBlogs = async (req, res) => {
     let query = Object.keys(req.query);
     if (query.length) {
       let filter = req.query;
+
+      if (filter.tags && filter.tags.match(/,/g)) {
+        filter.tags = filter.tags.split(",");
+      }
+
+      if (filter.subCategory && filter.subCategory.match(/,/g)) {
+        filter.subCategory = filter.subCategory.split(",");
+      }
+
       filter.isDeleted = false;
       filter.isPublished = true;
       let data = await blogModel.find(filter);
@@ -58,12 +67,10 @@ const updateBlog = async function (req, res) {
     let now = today.format("YYYY-MM-DD hh-mm-ss");
     let id = req.params.blogId;
     if (!checkId(id))
-      return res
-        .status(400)
-        .send({ status: false, msg: "Invalid Blog-Id" });
+      return res.status(400).send({ status: false, msg: "Invalid Blog-Id" });
     let updatedDocs = req.body;
     updatedDocs.publishedAt = now;
-    if(!await blogModel.findOne({ _id: id, isDeleted: false})) {
+    if (!(await blogModel.findOne({ _id: id, isDeleted: false }))) {
       return res
         .status(404)
         .send({ status: false, msg: "No blog with such id" });
@@ -88,11 +95,21 @@ const deleteBlogByQuery = async (req, res) => {
   try {
     let query = Object.keys(req.query);
     if (!query.length)
-      return res
-        .status(400)
-        .send({ status: false, msg: "Please provide valid query params" });
+      return res.status(400).send({
+        status: false,
+        msg: "Please provide valid query params or a valid authorId in path params",
+      });
     let filter = req.query;
     filter.isDeleted = false;
+
+    if (filter.tags && filter.tags.match(/,/g)) {
+      filter.tags = filter.tags.split(",");
+    }
+
+    if (filter.subCategory && filter.subCategory.match(/,/g)) {
+      filter.subCategory = filter.subCategory.split(",");
+    }
+
     let result = await blogModel.updateMany(filter, {
       $set: { isDeleted: true },
     });

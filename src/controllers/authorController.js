@@ -15,15 +15,15 @@ const createAuthor = async (req, res) => {
     if (!data.title)
       return res.status(400).send({ status: false, msg: "Title is mandatory" });
 
-    if (!data.password)
-      return res
-        .status(400)
-        .send({ status: false, msg: "Please enter a password" });
-
     if (!(data.email && validator.isEmail(data.email)))
       return res
         .status(400)
         .send({ status: false, msg: "Please enter a valid email" });
+
+    if (!data.password)
+      return res
+        .status(400)
+        .send({ status: false, msg: "Please enter a password" });
 
     if (await authorModel.findOne({ email: data.email }))
       return res
