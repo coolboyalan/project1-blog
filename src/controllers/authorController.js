@@ -3,16 +3,21 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+const check = (ele) => {
+  if (typeof ele == "string" && ele.length > 2) return true;
+  return false;
+};
+
 const createAuthor = async (req, res) => {
   try {
     let data = req.body;
 
-    if (!(data.firstName && data.lastName))
+    if (!(check(data.fname) && check(data.lname)))
       return res
         .status(400)
         .send({ status: false, msg: "Please check the name fields" });
 
-    if (!data.title)
+    if (!check(data.title))
       return res.status(400).send({ status: false, msg: "Title is mandatory" });
 
     if (!(data.email && validator.isEmail(data.email)))
@@ -20,7 +25,7 @@ const createAuthor = async (req, res) => {
         .status(400)
         .send({ status: false, msg: "Please enter a valid email" });
 
-    if (!data.password)
+    if (!check(data.password))
       return res
         .status(400)
         .send({ status: false, msg: "Please enter a password" });
@@ -64,7 +69,7 @@ const login = async (req, res) => {
 
     let id = author["_id"].toString();
     let token = jwt.sign({ authorId: id }, process.env.JWT_SECRET);
-    res.setHeader("x-auth-token", token);
+    res.setHeader("x-api-key", token);
     res.status(200).send({ status: true, data: token });
   } catch (err) {
     console.log(err.message);

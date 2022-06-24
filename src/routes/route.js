@@ -12,7 +12,7 @@ router.post("/authors", authors.create);
 router.post("/blogs", mid.auth, blogs.create);
 
 //GET APIS TO FETCH BLOGS WITH DIFFERENT FILTERS
-router.get("/blogs", mid.authLoggedIn, blogs.getBlogs);
+router.get("/blogs", mid.auth, blogs.getBlogs);
 
 //PUT APIS TO UPDATE BLOGS
 router.put("/blogs/:blogId", mid.auth, blogs.updateBlog);
