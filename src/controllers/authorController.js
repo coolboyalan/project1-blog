@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const check = (ele) => {
-  if (typeof ele == "string" && ele.length > 2) return true;
+  if (typeof ele == "string" && ele.length >= 2) return true;
   return false;
 };
 

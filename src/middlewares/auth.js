@@ -10,13 +10,24 @@ const auth = async (req, res, next) => {
     let query = Object.keys(req.query);
     let filter = req.query;
     let blogId = req.params.blogId;
-    let token = req.headers["x-api-key"] || req.headers["x-api-key"];
+    let data = req.body
+    let token = req.headers["x-api-key"] || req.headers["X-Api-Key"];
     if (!token)
       return res.status(400).send({ status: false, msg: "Token is Missing" });
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, payload) => {
       if (err) {
         return res.status(403).send({ status: false, msg: err.message });
+      }
+      req["x-api-key"] = payload.authorId
+      if(req.method == "POST"){
+        if(data.authorId!=payload.authorId){
+          return res.status(403).send({
+            status: false,
+            msg: "Not authorized to perform this action",
+          });
+        }
+        return next()
       }
       if (req.method == "GET") {
         return next();
