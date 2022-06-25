@@ -10,7 +10,7 @@ const auth = async (req, res, next) => {
     let query = Object.keys(req.query);
     let filter = req.query;
     let blogId = req.params.blogId;
-    let data = req.body
+    let data = req.body;
     let token = req.headers["x-api-key"] || req.headers["X-Api-Key"];
     if (!token)
       return res.status(400).send({ status: false, msg: "Token is Missing" });
@@ -19,15 +19,15 @@ const auth = async (req, res, next) => {
       if (err) {
         return res.status(403).send({ status: false, msg: err.message });
       }
-      req["x-api-key"] = payload.authorId
-      if(req.method == "POST"){
-        if(data.authorId!=payload.authorId){
+      req["x-api-key"] = payload.authorId;
+      if (req.method == "POST") {
+        if (data.authorId != payload.authorId) {
           return res.status(403).send({
             status: false,
             msg: "Not authorized to perform this action",
           });
         }
-        return next()
+        return next();
       }
       if (req.method == "GET") {
         return next();
@@ -38,30 +38,30 @@ const auth = async (req, res, next) => {
           if (!data)
             return res
               .status(404)
-              .send({ status: false, mssg: "No blog with this id" });
+              .send({ status: false, msg: "No blog with this id" });
           if (data.authorId != payload.authorId) {
             return res.status(403).send({
               status: false,
-              mssg: "Not authorized to perform this action",
+              msg: "Not authorized to perform this action",
             });
           }
           return next();
         } else
           return res
             .status(400)
-            .send({ status: false, mssg: "Please check Id in params" });
+            .send({ status: false, msg: "Please check Id in params" });
       }
       if (query.length) {
         if (!(filter.authorId && checkId(filter.authorId))) {
           return res.status(400).send({
             status: false,
-            mssg: "Please provide valid authorId in query params",
+            msg: "Please provide valid authorId in query params",
           });
         }
         if (filter.authorId != payload.authorId) {
           return res.status(403).send({
             status: false,
-            mssg: "Not authorized to perform this action",
+            msg: "Not authorized to perform this action",
           });
         }
         return next();
@@ -71,18 +71,18 @@ const auth = async (req, res, next) => {
         if (!data)
           return res
             .status(404)
-            .send({ status: false, mssg: "No blog with this id" });
+            .send({ status: false, msg: "No blog with this id" });
         if (data.authorId != payload.authorId) {
           return res.status(403).send({
             status: false,
-            mssg: "Not authorized to perform this action",
+            msg: "Not authorized to perform this action",
           });
         }
         next();
       } else
         return res
           .status(400)
-          .send({ status: false, mssg: "Please check Id in params" });
+          .send({ status: false, msg: "Please check Id in params" });
     });
   } catch (err) {
     console.log(err.message);

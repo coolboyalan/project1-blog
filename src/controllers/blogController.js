@@ -43,7 +43,7 @@ const createBlog = async (req, res) => {
       });
     }
     let result = await blogModel.create(data);
-    res.status(201).send({ status: true, data: result.authorId });
+    res.status(201).send({ status: true, data: result });
   } catch (err) {
     console.log(err.message);
     res.status(500).send({ status: false, msg: err.message });
@@ -174,6 +174,8 @@ const deleteBlogByQuery = async (req, res) => {
 
 const deleteBlog = async function (req, res) {
   try {
+    const today = moment();
+    let now = today.format("YYYY-MM-DD hh-mm-ss");
     let id = req.params.blogId;
     if (!(id && checkId(id)))
       return res.status(400).send({
@@ -183,7 +185,7 @@ const deleteBlog = async function (req, res) {
 
     let result = await blogModel.findOneAndUpdate(
       { _id: id, isDeleted: false },
-      { isDeleted: true }
+      { isDeleted: true, deletedAt : now }
     );
     if (!result)
       return res

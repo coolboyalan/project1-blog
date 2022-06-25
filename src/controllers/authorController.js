@@ -34,7 +34,7 @@ const createAuthor = async (req, res) => {
       return res
         .status(400)
         .send({ status: false, msg: "Email already exists" });
-
+        
     let result = await authorModel.create(data);
     res.status(201).send(result);
   } catch (err) {
