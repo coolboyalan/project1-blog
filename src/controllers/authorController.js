@@ -15,8 +15,10 @@ const createAuthor = async (req, res) => {
         .status(400)
         .send({ status: false, msg: "Please check the name fields" });
 
-    if (!isValid.check(data.title))
-      return res.status(400).send({ status: false, msg: "Title is mandatory" });
+    let arr = ["Mr", "Mrs", "Miss"];
+
+    if (!arr.includes(data.title))
+      return res.status(400).send({ status: false, msg: "Please check the title" });
 
     if (!(data.email && validator.isEmail(data.email)))
       return res
@@ -34,10 +36,10 @@ const createAuthor = async (req, res) => {
         .send({ status: false, msg: "Email already exists" });
 
     let result = await authorModel.create(data);
-    res.status(201).send(result);
+    res.status(201).send({status:true,data:result});
   } catch (err) {
     console.log(err.message);
-    res.status(500).send({ Error: err.message });
+    res.status(500).send({ status:false,msg: err.message });
   }
 };
 

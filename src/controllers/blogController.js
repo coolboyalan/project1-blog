@@ -6,7 +6,7 @@ const checkId = mongoose.isValidObjectId;
 const moment = require("moment");
 const isValid = require("../validators/dataValidator");
 
-const createBlog = async (req, res) => {
+const createBlog = async (req, res) => {      //POST API TO CREATE A BLOG
   try {
     let data = req.body;
     let id = data.authorId;
@@ -54,7 +54,7 @@ const createBlog = async (req, res) => {
   }
 };
 
-const getBlogs = async (req, res) => {
+const getBlogs = async (req, res) => {    //GET API TO GET ALL BLOGS
   try {
     let query = Object.keys(req.query);
     if (query.length) {
@@ -82,14 +82,14 @@ const getBlogs = async (req, res) => {
     if (!data.length)
       return res.status(404).send({ status: false, msg: "No blogs found" });
 
-    res.status(200).send({ status: true, data: { data } });
+    res.status(200).send({ status: true, data:  data  });
   } catch (err) {
     console.log(err.message);
     res.status(500).send({ status: false, msg: err.message });
   }
 };
 
-const updateBlog = async function (req, res) {
+const updateBlog = async function (req, res) {    //PUT API TO UPDATE A BLOG
   try {
     const today = moment();
     let now = today.format("YYYY-MM-DD hh-mm-ss");
@@ -138,7 +138,7 @@ const updateBlog = async function (req, res) {
   }
 };
 
-const deleteBlogByQuery = async (req, res) => {
+const deleteBlogByQuery = async (req, res) => {    //DELETE API TO DELETE BLOGS BY QUERY
   try {
     const today = moment();
     let now = today.format("YYYY-MM-DD hh-mm-ss");
@@ -170,7 +170,7 @@ const deleteBlogByQuery = async (req, res) => {
   }
 };
 
-const deleteBlog = async function (req, res) {
+const deleteBlog = async function (req, res) {    //DELETE API TO DELETE A BLOG
   try {
     const today = moment();
     let now = today.format("YYYY-MM-DD hh-mm-ss");

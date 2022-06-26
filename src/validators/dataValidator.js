@@ -6,7 +6,7 @@ const checkId = (ele) => {
   }
 
 const check = (ele) => {
-    if (typeof ele == "string" && ele != "" && ele.length > 2) return true;
+    if (typeof ele == "string" && ele != "" && ele.length >= 2) return true;
     return false;
   };
 
