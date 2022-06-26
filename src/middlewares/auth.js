@@ -39,6 +39,7 @@ const auth = async (req, res, next) => {
             return res
               .status(404)
               .send({ status: false, msg: "No blog with this id" });
+          data.authorId = data.authorId.toString();
           if (data.authorId != payload.authorId) {
             return res.status(403).send({
               status: false,
@@ -51,38 +52,29 @@ const auth = async (req, res, next) => {
             .status(400)
             .send({ status: false, msg: "Please check Id in params" });
       }
-      if (query.length) {
-        if (!(filter.authorId && checkId(filter.authorId))) {
-          return res.status(400).send({
-            status: false,
-            msg: "Please provide valid authorId in query params",
-          });
+      if (req.method == "DELETE") {
+        if (query.length) {
+          return next();
         }
-        if (filter.authorId != payload.authorId) {
-          return res.status(403).send({
-            status: false,
-            msg: "Not authorized to perform this action",
-          });
-        }
-        return next();
-      }
-      if (blogId && checkId(blogId)) {
-        let data = await blogModel.findById(blogId);
-        if (!data)
+        if (blogId && checkId(blogId)) {
+          let data = await blogModel.findById(blogId);
+          if (!data)
+            return res
+              .status(404)
+              .send({ status: false, msg: "No blog with this id" });
+          if (data.authorId != payload.authorId) {
+            return res.status(403).send({
+              status: false,
+              msg: "Not authorized to perform this action",
+            });
+          }
+          next();
+        } else {
           return res
-            .status(404)
-            .send({ status: false, msg: "No blog with this id" });
-        if (data.authorId != payload.authorId) {
-          return res.status(403).send({
-            status: false,
-            msg: "Not authorized to perform this action",
-          });
+            .status(400)
+            .send({ status: false, msg: "Please check Id in params" });
         }
-        next();
-      } else
-        return res
-          .status(400)
-          .send({ status: false, msg: "Please check Id in params" });
+      }
     });
   } catch (err) {
     console.log(err.message);

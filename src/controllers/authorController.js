@@ -28,13 +28,13 @@ const createAuthor = async (req, res) => {
     if (!check(data.password))
       return res
         .status(400)
-        .send({ status: false, msg: "Please enter a password" });
+        .send({ status: false, msg: "Please enter a strong password" });
 
     if (await authorModel.findOne({ email: data.email }))
       return res
-        .status(400)
+        .status(409)
         .send({ status: false, msg: "Email already exists" });
-        
+
     let result = await authorModel.create(data);
     res.status(201).send(result);
   } catch (err) {
@@ -48,7 +48,7 @@ const login = async (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
 
-    if (!(email && password))
+    if (!(check(email) && check(password)))
       return res
         .status(400)
         .send({ status: false, msg: "email or password is missing" });

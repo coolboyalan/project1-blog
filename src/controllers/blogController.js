@@ -34,6 +34,34 @@ const createBlog = async (req, res) => {
         msg: "Please provide valid content in the body",
       });
     }
+    if (data.tags) {
+      let arrCheck = Array.isArray(data.tags) && data.tags.length;
+      if (arrCheck) {
+        data.tags.forEach((x) => {
+          if (typeof x != "string") arrCheck = false;
+        });
+      }
+      if (!(typeof data.tags == "string" || arrCheck)) {
+        return res.status(400).send({
+          status: false,
+          msg: "Please check the tags",
+        });
+      }
+    }
+    if (data.subcategory) {
+      let arrCheck = Array.isArray(data.subcategory) && data.subcategory.length;
+      if (arrCheck) {
+        data.subcategory.forEach((x) => {
+          if (typeof x != "string") arrCheck = false;
+        });
+      }
+      if (!(typeof data.subcategory == "string" || arrCheck)) {
+        return res.status(400).send({
+          status: false,
+          msg: "Please check the subcategory",
+        });
+      }
+    }
     let valid = check(id) && checkId(id); //mongoose.isValidObjectId has some issues
 
     if (!(valid && (await authorModel.findById(data.authorId)))) {
@@ -56,18 +84,8 @@ const getBlogs = async (req, res) => {
     if (query.length) {
       let filter = req.query;
 
-      if (!Array.isArray(filter.tags)) {
-        if (filter.tags && filter.tags.match(/,/g)) {
-          filter.tags = filter.tags.split(",");
-        }
-      }
-      if (!Array.isArray(filter.subcategory)) {
-        if (filter.subcategory && filter.subcategory.match(/,/g)) {
-          filter.subcategory = filter.subcategory.split(",");
-        }
-      }
       if (Array.isArray(filter.tags)) filter.tags = { $all: filter.tags };
-      if (Array.isArray(filter.subcategory)){
+      if (Array.isArray(filter.subcategory)) {
         filter.subcategory = { $all: filter.subcategory };
       }
       filter.isDeleted = false;
@@ -112,7 +130,8 @@ const updateBlog = async function (req, res) {
           .send({ status: false, msg: "Please check the subcategory field" });
     }
 
-    docs.publishedAt = now;
+    let published = await blogModel.findById(id);
+    if (!published.publishedAt) docs.publishedAt = now;
 
     let data = await blogModel.findOneAndUpdate(
       { _id: id, isDeleted: false },
@@ -144,20 +163,11 @@ const deleteBlogByQuery = async (req, res) => {
     let filter = req.query;
     filter.isDeleted = false;
 
-    if (!Array.isArray(filter.tags)) {
-      if (filter.tags && filter.tags.match(/,/g)) {
-        filter.tags = filter.tags.split(",");
-      }
-    }
-    if (!Array.isArray(filter.subcategory)) {
-      if (filter.subcategory && filter.subcategory.match(/,/g)) {
-        filter.subcategory = filter.subcategory.split(",");
-      }
-    }
     if (Array.isArray(filter.tags)) filter.tags = { $all: filter.tags };
-    if (Array.isArray(filter.subcategory)){
+    if (Array.isArray(filter.subcategory)) {
       filter.subcategory = { $all: filter.subcategory };
     }
+    if(!filter.authorId) filter.authorId = req["x-api-key"]
     let result = await blogModel.updateMany(filter, {
       $set: { isDeleted: true, deletedAt: now },
     });
@@ -185,7 +195,7 @@ const deleteBlog = async function (req, res) {
 
     let result = await blogModel.findOneAndUpdate(
       { _id: id, isDeleted: false },
-      { isDeleted: true, deletedAt : now }
+      { isDeleted: true, deletedAt: now }
     );
     if (!result)
       return res
