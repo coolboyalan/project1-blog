@@ -1,3 +1,4 @@
+// # PLEASE READ THE README FILE FIRST AND THIS IS NOT THE FINAL BRANCH, PLEASE DO TESTING ON FINAL BRANCH "project/blog" 
 const jwt = require("jsonwebtoken");
 const authorModel = require("../models/authorModel");
 const blogModel = require("../models/blogModel");
