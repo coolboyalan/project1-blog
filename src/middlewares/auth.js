@@ -17,14 +17,14 @@ const auth = async (req, res, next) => {
 
     jwt.verify(token, process.env.JWT_SECRET, async (err, payload) => {
       if (err) {
-        return res.status(403).send({ status: false, msg: err.message });
+        return res.status(401).send({ status: false, msg: err.message });
       }
       req["x-api-key"] = payload.authorId;
       if (req.method == "POST") {
         if (data.authorId != payload.authorId) {
           return res.status(403).send({
             status: false,
-            msg: "Not authorized to perform this action",
+            msg: "Not authorized, Please enter your authorId",
           });
         }
         return next();
@@ -43,7 +43,7 @@ const auth = async (req, res, next) => {
           if (data.authorId != payload.authorId) {
             return res.status(403).send({
               status: false,
-              msg: "Not authorized to perform this action",
+              msg: "Not authorized, You can only update your blogs.",
             });
           }
           return next();
@@ -54,6 +54,12 @@ const auth = async (req, res, next) => {
       }
       if (req.method == "DELETE") {
         if (query.length) {
+          if(filter.authorId && (filter.authorId!=payload.authorId)){
+            return res.status(403).send({
+              status: false,
+              msg: "Not authorized, You can only delete your blogs",
+            });
+          }
           return next();
         }
         if (blogId && checkId(blogId)) {
@@ -65,7 +71,7 @@ const auth = async (req, res, next) => {
           if (data.authorId != payload.authorId) {
             return res.status(403).send({
               status: false,
-              msg: "Not authorized to perform this action",
+              msg: "Not authorized, You can only delete your blogs",
             });
           }
           next();

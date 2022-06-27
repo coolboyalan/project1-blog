@@ -9,10 +9,19 @@ const check = (ele) => {
   return false;
 };
 
-const checkArr = (ele) => {
-  if (typeof ele === "string" || Array.isArray(ele)) return true;
-  return false;
+const checkArr = (val) => {
+  let arrCheck = Array.isArray(val) && val.length;
+  if (arrCheck) {
+    val.forEach((x) => {
+      if (typeof x != "string") arrCheck = false;
+    });
+  }
+  if (!(typeof val == "string" || arrCheck)) {
+    return false;
+  }
+  return true;
 };
+
 
 const createBlog = async (req, res) => {
   try {
@@ -34,33 +43,17 @@ const createBlog = async (req, res) => {
         msg: "Please provide valid content in the body",
       });
     }
-    if (data.tags) {
-      let arrCheck = Array.isArray(data.tags) && data.tags.length;
-      if (arrCheck) {
-        data.tags.forEach((x) => {
-          if (typeof x != "string") arrCheck = false;
-        });
-      }
-      if (!(typeof data.tags == "string" || arrCheck)) {
-        return res.status(400).send({
-          status: false,
-          msg: "Please check the tags",
-        });
-      }
+    if (!checkArr(data.tags)){
+      return res.status(400).send({
+        status: false,
+        msg: "Please check the tags",
+      });
     }
-    if (data.subcategory) {
-      let arrCheck = Array.isArray(data.subcategory) && data.subcategory.length;
-      if (arrCheck) {
-        data.subcategory.forEach((x) => {
-          if (typeof x != "string") arrCheck = false;
-        });
-      }
-      if (!(typeof data.subcategory == "string" || arrCheck)) {
-        return res.status(400).send({
-          status: false,
-          msg: "Please check the subcategory",
-        });
-      }
+    if (!checkArr(data.subcategory)) {
+      return res.status(400).send({
+        status: false,
+        msg: "Please check the subcategory",
+      });
     }
     let valid = check(id) && checkId(id); //mongoose.isValidObjectId has some issues
 
@@ -167,7 +160,7 @@ const deleteBlogByQuery = async (req, res) => {
     if (Array.isArray(filter.subcategory)) {
       filter.subcategory = { $all: filter.subcategory };
     }
-    if(!filter.authorId) filter.authorId = req["x-api-key"]
+    if (!filter.authorId) filter.authorId = req["x-api-key"];
     let result = await blogModel.updateMany(filter, {
       $set: { isDeleted: true, deletedAt: now },
     });
