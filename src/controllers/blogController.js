@@ -1,3 +1,4 @@
+// # PLEASE READ THE README FILE FIRST AND THIS IS NOT THE FINAL BRANCH, PLEASE DO TESTING ON FINAL BRANCH "project/blog" 
 const { default: mongoose } = require("mongoose");
 const blogModel = require("../models/blogModel");
 const authorModel = require("../models/authorModel");
