@@ -97,6 +97,13 @@ const updateBlog = async function (req, res) {
     if (!isValid.checkId(id))
       return res.status(400).send({ status: false, msg: "Invalid Blog-Id" });
     let docs = req.body;
+    let update = Object.keys(docs);
+    if (!update.length){
+      return res.status(400).send({
+        status: false,
+        msg: "Please provide valid data to update",
+      });
+    }
     if (docs.tags) {
       if (!isValid.checkArr(docs.tags))
         return res
