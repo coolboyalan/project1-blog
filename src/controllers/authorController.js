@@ -3,22 +3,19 @@ const authorModel = require("../models/authorModel");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const isValid = require("../validators/dataValidator");
 
-const check = (ele) => {
-  if (typeof ele == "string" && ele.length >= 2) return true;
-  return false;
-};
 
 const createAuthor = async (req, res) => {
   try {
     let data = req.body;
 
-    if (!(check(data.fname) && check(data.lname)))
+    if (!(isValid.check(data.fname) && isValid.check(data.lname)))
       return res
         .status(400)
         .send({ status: false, msg: "Please check the name fields" });
 
-    if (!check(data.title))
+    if (!isValid.check(data.title))
       return res.status(400).send({ status: false, msg: "Title is mandatory" });
 
     if (!(data.email && validator.isEmail(data.email)))
@@ -26,7 +23,7 @@ const createAuthor = async (req, res) => {
         .status(400)
         .send({ status: false, msg: "Please enter a valid email" });
 
-    if (!check(data.password))
+    if (!isValid.check(data.password))
       return res
         .status(400)
         .send({ status: false, msg: "Please enter a strong password" });
@@ -49,10 +46,10 @@ const login = async (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
 
-    if (!(check(email) && check(password)))
+    if (!(isValid.check(email) && isValid.check(password)))
       return res
         .status(400)
-        .send({ status: false, msg: "email or password is missing" });
+        .send({ status: false, msg: "Please check the email/password fields" });
 
     if (!validator.isEmail(email)) {
       return res.status(400).send({ status: false, msg: "Invalid email" });

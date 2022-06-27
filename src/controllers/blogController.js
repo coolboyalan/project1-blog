@@ -4,25 +4,7 @@ const blogModel = require("../models/blogModel");
 const authorModel = require("../models/authorModel");
 const checkId = mongoose.isValidObjectId;
 const moment = require("moment");
-
-const check = (ele) => {
-  if (typeof ele == "string" && ele != "" && ele.length > 2) return true;
-  return false;
-};
-
-const checkArr = (val) => {
-  let arrCheck = Array.isArray(val) && val.length;
-  if (arrCheck) {
-    val.forEach((x) => {
-      if (typeof x != "string") arrCheck = false;
-    });
-  }
-  if (!(typeof val == "string" || arrCheck)) {
-    return false;
-  }
-  return true;
-};
-
+const isValid = require("../validators/dataValidator");
 
 const createBlog = async (req, res) => {
   try {
@@ -33,30 +15,30 @@ const createBlog = async (req, res) => {
         .status(400)
         .send({ status: false, msg: "Please enter a valid Title" });
     }
-    if (!check(data.category)) {
+    if (!isValid.check(data.category)) {
       return res
         .status(400)
         .send({ status: false, msg: "Please enter a valid category" });
     }
-    if (!check(data.body)) {
+    if (!isValid.check(data.body)) {
       return res.status(400).send({
         status: false,
         msg: "Please provide valid content in the body",
       });
     }
-    if (!checkArr(data.tags)){
+    if (!isValid.checkArr(data.tags)){
       return res.status(400).send({
         status: false,
         msg: "Please check the tags",
       });
     }
-    if (!checkArr(data.subcategory)) {
+    if (!isValid.checkArr(data.subcategory)) {
       return res.status(400).send({
         status: false,
         msg: "Please check the subcategory",
       });
     }
-    let valid = check(id) && checkId(id); //mongoose.isValidObjectId has some issues
+    let valid = isValid.checkId(id);
 
     if (!(valid && (await authorModel.findById(data.authorId)))) {
       return res.status(404).send({
@@ -77,7 +59,12 @@ const getBlogs = async (req, res) => {
     let query = Object.keys(req.query);
     if (query.length) {
       let filter = req.query;
-
+      if(filter.authorId && (!isValid.checkId(filter.authorId))){
+        return res.status(400).send({
+          status: false,
+          msg: "Invalid authorId",
+        });
+      }
       if (Array.isArray(filter.tags)) filter.tags = { $all: filter.tags };
       if (Array.isArray(filter.subcategory)) {
         filter.subcategory = { $all: filter.subcategory };
@@ -107,18 +94,18 @@ const updateBlog = async function (req, res) {
     const today = moment();
     let now = today.format("YYYY-MM-DD hh-mm-ss");
     let id = req.params.blogId;
-    if (!checkId(id))
+    if (!isValid.checkId(id))
       return res.status(400).send({ status: false, msg: "Invalid Blog-Id" });
     let docs = req.body;
     if (docs.tags) {
-      if (!checkArr(docs.tags))
+      if (!isValid.checkArr(docs.tags))
         return res
           .status(500)
           .send({ status: false, msg: "Please check the tags field" });
     }
 
     if (docs.subcategory) {
-      if (!checkArr(docs.subcategory))
+      if (!isValid.checkArr(docs.subcategory))
         return res
           .status(500)
           .send({ status: false, msg: "Please check the subcategory field" });
@@ -181,7 +168,7 @@ const deleteBlog = async function (req, res) {
     const today = moment();
     let now = today.format("YYYY-MM-DD hh-mm-ss");
     let id = req.params.blogId;
-    if (!(id && checkId(id)))
+    if (!(id && isValid.checkId(id)))
       return res.status(400).send({
         status: false,
         msg: "Please provide the valid blogId in params",

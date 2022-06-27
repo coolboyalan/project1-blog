@@ -5,6 +5,7 @@ const blogModel = require("../models/blogModel");
 const mongoose = require("mongoose");
 require("dotenv").config();
 const checkId = mongoose.isValidObjectId;
+const isValid = require("../validators/dataValidator");
 
 const auth = async (req, res, next) => {
   try {
@@ -34,7 +35,7 @@ const auth = async (req, res, next) => {
         return next();
       }
       if (req.method == "PUT") {
-        if (blogId && checkId(blogId)) {
+        if (blogId && isValid.checkId(blogId)) {
           let data = await blogModel.findById(blogId);
           if (!data)
             return res
@@ -63,7 +64,7 @@ const auth = async (req, res, next) => {
           }
           return next();
         }
-        if (blogId && checkId(blogId)) {
+        if (blogId && isValid.checkId(blogId)) {
           let data = await blogModel.findById(blogId);
           if (!data)
             return res
