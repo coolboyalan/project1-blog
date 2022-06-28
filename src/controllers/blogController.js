@@ -1,49 +1,63 @@
-// # PLEASE READ THE README FILE FIRST AND THIS IS NOT THE FINAL BRANCH, PLEASE DO TESTING ON FINAL BRANCH "project/blog" 
+// # PLEASE READ THE README FILE FIRST AND THIS IS NOT THE FINAL BRANCH, PLEASE DO TESTING ON FINAL BRANCH "project/blog"
 const { default: mongoose } = require("mongoose");
 const blogModel = require("../models/blogModel");
 const authorModel = require("../models/authorModel");
-const checkId = mongoose.isValidObjectId;
-const moment = require("moment");
 const isValid = require("../validators/dataValidator");
 
-const createBlog = async (req, res) => {      //POST API TO CREATE A BLOG
+/** 
+ * @createBlog 
+    POST API TO CREATE A BLOG
+    AFTER VALIDATING ALL THE FIELDS
+*/
+const createBlog = async (req, res) => {
   try {
     let data = req.body;
-    let id = data.authorId;
-    if (!check(data.title)) {
+    let dataLength = Object.keys(data).length;
+    const { title, category, body, tags, subcategory, authorId } = data;
+
+    //VALIDATIONS
+    if (!dataLength) {
+      return res.status(400).send({
+        status: false,
+        msg: "Please provide some valid data for the blog",
+      });
+    }
+    if (!isValid.check(title)) {
       return res
         .status(400)
         .send({ status: false, msg: "Please enter a valid Title" });
     }
-    if (!isValid.check(data.category)) {
+    if (!isValid.check(category)) {
       return res
         .status(400)
         .send({ status: false, msg: "Please enter a valid category" });
     }
-    if (!isValid.check(data.body)) {
+    if (!isValid.check(body)) {
       return res.status(400).send({
         status: false,
         msg: "Please provide valid content in the body",
       });
     }
-    if (!isValid.checkArr(data.tags)){
-      return res.status(400).send({
-        status: false,
-        msg: "Please check the tags",
-      });
+    if (tags) {
+      if (!isValid.checkArr(tags))
+        return res.status(400).send({
+          status: false,
+          msg: "Please check the tags",
+        });
     }
-    if (!isValid.checkArr(data.subcategory)) {
-      return res.status(400).send({
-        status: false,
-        msg: "Please check the subcategory",
-      });
+    if (subcategory) {
+      if (!isValid.checkArr(subcategory))
+        return res.status(400).send({
+          status: false,
+          msg: "Please check the subcategory",
+        });
     }
-    let valid = isValid.checkId(id);
+    let valid = isValid.checkId(authorId);
 
-    if (!(valid && (await authorModel.findById(data.authorId)))) {
+    if (!(valid && (await authorModel.findById(authorId)))) {
       return res.status(404).send({
         status: false,
-        msg: "Invalid author id or author doesn't exist",
+        msg: "Please provide a valid authorId",
       });
     }
     let result = await blogModel.create(data);
@@ -54,18 +68,28 @@ const createBlog = async (req, res) => {      //POST API TO CREATE A BLOG
   }
 };
 
-const getBlogs = async (req, res) => {    //GET API TO GET ALL BLOGS
+/** 
+ * @getBlogs
+    GET API TO GET ALL BLOGS
+    OR GET BLOGS BASED ON QUERY FILTERS
+*/
+const getBlogs = async (req, res) => {
   try {
     let query = Object.keys(req.query);
     if (query.length) {
+      /* THE CODE INSIDE THIS SCOPE WILL RUN ONLY IF THE REQUEST IS 
+         MADE USING QUERIES */
+
       let filter = req.query;
-      if(filter.authorId && (!isValid.checkId(filter.authorId))){
+      if (filter.authorId && !isValid.checkId(filter.authorId)) {
         return res.status(400).send({
           status: false,
           msg: "Invalid authorId",
         });
       }
-      if (Array.isArray(filter.tags)) filter.tags = { $all: filter.tags };
+      if (Array.isArray(filter.tags)) {
+        filter.tags = { $all: filter.tags };
+      }
       if (Array.isArray(filter.subcategory)) {
         filter.subcategory = { $all: filter.subcategory };
       }
@@ -77,53 +101,102 @@ const getBlogs = async (req, res) => {    //GET API TO GET ALL BLOGS
       }
       return res.status(200).send({ status: true, data: data });
     }
+
+    // THE CODE HERE WILL RUN WHEN THERE WERE NO QUERIES IN THE REQUEST
+
     let data = await blogModel.find({ isDeleted: false, isPublished: true });
 
     if (!data.length)
       return res.status(404).send({ status: false, msg: "No blogs found" });
 
-    res.status(200).send({ status: true, data:  data  });
+    res.status(200).send({ status: true, data: data });
   } catch (err) {
     console.log(err.message);
     res.status(500).send({ status: false, msg: err.message });
   }
 };
 
-const updateBlog = async function (req, res) {    //PUT API TO UPDATE A BLOG
+/** 
+ * @updateBlog
+    PUT API TO GET ALL BLOG
+*/
+const updateBlog = async function (req, res) {
   try {
-    const today = moment();
-    let now = today.format("YYYY-MM-DD hh-mm-ss");
     let id = req.params.blogId;
-    if (!isValid.checkId(id))
-      return res.status(400).send({ status: false, msg: "Invalid Blog-Id" });
     let docs = req.body;
     let update = Object.keys(docs);
-    if (!update.length){
+    let updates = {};
+    let arrUpdate = {};
+    let { title, category, body, tags, subcategory, isPublished } = docs;
+
+    //VALIDATIONS
+    if (title) {
+      if (!isValid.check(title)) {
+        return res
+          .status(400)
+          .send({ status: false, msg: "Please enter a valid Title" });
+      }
+      updates.title = title;
+    }
+    if (category) {
+      if (!isValid.check(category)) {
+        return res
+          .status(400)
+          .send({ status: false, msg: "Please enter a valid category" });
+      }
+      updates.category = category;
+    }
+    if (body) {
+      if (!isValid.check(body)) {
+        return res.status(400).send({
+          status: false,
+          msg: "Please provide valid content in the body",
+        });
+      }
+      updates.body = body;
+    }
+    if (!isValid.checkId(id)) {
+      return res.status(400).send({ status: false, msg: "Invalid Blog-Id" });
+    }
+    if (!update.length) {
       return res.status(400).send({
         status: false,
         msg: "Please provide valid data to update",
       });
     }
-    if (docs.tags) {
-      if (!isValid.checkArr(docs.tags))
+    if (tags) {
+      if (!isValid.checkArr(tags)) {
         return res
           .status(500)
           .send({ status: false, msg: "Please check the tags field" });
+      }
+      if (Array.isArray(tags)) {
+        arrUpdate["tags"] = { $each: [...tags] };
+      } else {
+        arrUpdate["tags"] = tags;
+      }
     }
-
-    if (docs.subcategory) {
-      if (!isValid.checkArr(docs.subcategory))
+    if (subcategory) {
+      if (!isValid.checkArr(subcategory)) {
         return res
           .status(500)
           .send({ status: false, msg: "Please check the subcategory field" });
+      }
+      if (Array.isArray(subcategory)) {
+        arrUpdate["subcategory"] = { $each: [...subcategory] };
+      } else {
+        arrUpdate["subcategory"] = subcategory;
+      }
     }
 
+    if (typeof isPublished == "boolean") {
+      updates.isPublished = isPublished;
+    }
     let published = await blogModel.findById(id);
-    if (!published.publishedAt) docs.publishedAt = now;
-
+    if (!published.publishedAt) updates.publishedAt = new Date();
     let data = await blogModel.findOneAndUpdate(
       { _id: id, isDeleted: false },
-      { $set: docs, isPublished: true },
+      { $set: updates, $addToSet: arrUpdate },
       { new: true }
     );
     if (!data)
@@ -138,31 +211,36 @@ const updateBlog = async function (req, res) {    //PUT API TO UPDATE A BLOG
   }
 };
 
-const deleteBlogByQuery = async (req, res) => {    //DELETE API TO DELETE BLOGS BY QUERY
+/** 
+ * @deleteBlogByQuery
+    DELETE API TO DELETE BLOGS BY QUERY FILTERS
+*/
+const deleteBlogByQuery = async (req, res) => {
   try {
-    const today = moment();
-    let now = today.format("YYYY-MM-DD hh-mm-ss");
     let query = Object.keys(req.query);
     if (!query.length)
       return res.status(400).send({
         status: false,
-        msg: "Please provide valid query params or a valid authorId in path params",
+        msg: "Please provide valid query params",
       });
     let filter = req.query;
     filter.isDeleted = false;
 
-    if (Array.isArray(filter.tags)) filter.tags = { $all: filter.tags };
+    if (Array.isArray(filter.tags)) {
+      filter.tags = { $all: filter.tags };
+    }
     if (Array.isArray(filter.subcategory)) {
       filter.subcategory = { $all: filter.subcategory };
     }
     if (!filter.authorId) filter.authorId = req["x-api-key"];
     let result = await blogModel.updateMany(filter, {
-      $set: { isDeleted: true, deletedAt: now },
+      $set: { isDeleted: true, deletedAt: new Date() },
     });
-    if (!result.modifiedCount)
+    if (!result.modifiedCount) {
       return res
         .status(404)
         .send({ status: false, msg: "No such blogs or already deleted" });
+    }
     res.status(200).send({ status: true, data: result });
   } catch (err) {
     console.log(err.message);
@@ -170,25 +248,30 @@ const deleteBlogByQuery = async (req, res) => {    //DELETE API TO DELETE BLOGS 
   }
 };
 
-const deleteBlog = async function (req, res) {    //DELETE API TO DELETE A BLOG
+/** 
+ * @deleteBlog
+    DELETE API TO DELETE BLOGS BY BLOG ID
+*/
+const deleteBlog = async function (req, res) {
   try {
-    const today = moment();
-    let now = today.format("YYYY-MM-DD hh-mm-ss");
     let id = req.params.blogId;
-    if (!(id && isValid.checkId(id)))
+
+    //BLOGID VALIDATION
+    if (!(id && isValid.checkId(id))) {
       return res.status(400).send({
         status: false,
         msg: "Please provide the valid blogId in params",
       });
-
+    }
     let result = await blogModel.findOneAndUpdate(
       { _id: id, isDeleted: false },
-      { isDeleted: true, deletedAt: now }
+      { isDeleted: true, deletedAt: new Date() }
     );
-    if (!result)
+    if (!result) {
       return res
         .status(404)
         .send({ status: false, msg: "Blog not present or already deleted" });
+    }
     res.status(200).send();
   } catch (err) {
     console.log(err.message);

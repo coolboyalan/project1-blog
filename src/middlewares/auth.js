@@ -37,10 +37,11 @@ const auth = async (req, res, next) => {
       if (req.method == "PUT") {
         if (blogId && isValid.checkId(blogId)) {
           let data = await blogModel.findById(blogId);
-          if (!data)
+          if (!data){
             return res
               .status(404)
               .send({ status: false, msg: "No blog with this id" });
+          }
           data.authorId = data.authorId.toString();
           if (data.authorId != payload.authorId) {
             return res.status(403).send({
@@ -49,10 +50,11 @@ const auth = async (req, res, next) => {
             });
           }
           return next();
-        } else
+        } else{
           return res
             .status(400)
             .send({ status: false, msg: "Please check Id in params" });
+        }
       }
       if (req.method == "DELETE") {
         if (query.length) {
@@ -66,10 +68,11 @@ const auth = async (req, res, next) => {
         }
         if (blogId && isValid.checkId(blogId)) {
           let data = await blogModel.findById(blogId);
-          if (!data)
+          if (!data){
             return res
               .status(404)
               .send({ status: false, msg: "No blog with this id" });
+          }
           if (data.authorId != payload.authorId) {
             return res.status(403).send({
               status: false,
